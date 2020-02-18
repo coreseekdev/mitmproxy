@@ -142,6 +142,31 @@ TODO
 
 ## HTTP/2.0
 
+对 gRPC 的支持, 存在现成的工具 https://github.com/bradleyjkemp/grpc-tools . 
+
+通过给 mitmproxy 增加 grpc 支持, 尝试进一步了解 http2 以及 为 avdl2 的支持提供知识积累.
+
+
+NOTE OF HTTP2 / GRPC
+
+- 在默认情况下, Python 的 gRPC 客户端没有启动加密. 此情况下, 客户端使用 HTTP/2 connections with prior knowledge 的方式发起请求
+
+    > HTTP/2 connections with prior knowledge 尚不被支持.
+
 TODO
 
-- [ ] 支持　gRPC 需要的扩展
+- [ ] 未加密的情况下, 支持 HTTP/2 connections with prior knowledge
+    需要启用 option ssl_insecure , 设置为不为 0  的值, 默认为 0
+    > 实际上, 在 mitmproxy/net/tcp:384 左右, tls.create_client_context 可以给出选项, verify = False
+- [ ] ALPN: grpc-exp
+    > 目前的分析看, gRPC 默认支持的 APN 为 grpc-exp , h2 . 在 github 上, 出现 grpc-exp 的代码非常少.
+
+    > 实际代码在 mitmproxy/proxy/protocol/tls.py:342 行左右, 调试的输出 options = ['grpc-exp', 'h2'] , 似乎不需要特别处理 
+
+- [ ] 自签名证书
+
+    + 在 mitmproxy/proxy/protocol/http.py:212 行 附近 ,处理 证书相关的问题 
+
+- [ ] gRPC 需要的扩展
+    
+    Ref: https://github.com/mitmproxy/mitmproxy/issues/3052
