@@ -93,7 +93,9 @@
 - 基于 tag 进行回放控制是不必要的, 完全可以分步执行
 
     1. 捕获全部 flow
-    2. 对捕获到的文件进行过滤, 去掉 asset 文件
+    2. 对捕获到的文件进行过滤, 
+        2.1 去掉 asset 文件
+        2.2 单独输出 asset 文件
 
     > mitmdump --anticache -r rec.data -n --set readfile_filter=\!\~a -w 1.data
 
