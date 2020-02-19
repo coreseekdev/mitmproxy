@@ -156,16 +156,35 @@ NOTE OF HTTP2 / GRPC
 TODO
 
 - [ ] 未加密的情况下, 支持 HTTP/2 connections with prior knowledge
-    需要启用 option ssl_insecure , 设置为不为 0  的值, 默认为 0
+
+- [X] 在自签名证书的情况下, 启用 tls
+
+    需要启用 option ssl_insecure , 设置为不为 0  的值, 默认为 0 , 
+    > --ssl_insecure=1
     > 实际上, 在 mitmproxy/net/tcp:384 左右, tls.create_client_context 可以给出选项, verify = False
-- [ ] ALPN: grpc-exp
+
+- [X] ALPN: grpc-exp
     > 目前的分析看, gRPC 默认支持的 APN 为 grpc-exp , h2 . 在 github 上, 出现 grpc-exp 的代码非常少.
 
-    > 实际代码在 mitmproxy/proxy/protocol/tls.py:342 行左右, 调试的输出 options = ['grpc-exp', 'h2'] , 似乎不需要特别处理 
+    > 实际代码在 mitmproxy/proxy/protocol/tls.py:342 行左右, 调试的输出 options = ['grpc-exp', 'h2'] , 似乎不需要特别处理
 
-- [ ] 自签名证书
+- [X] 自签名证书
 
     + 在 mitmproxy/proxy/protocol/http.py:212 行 附近 ,处理 证书相关的问题 
+    + grpc 的客户端需要信任 mitmproxy 的 ca
+    + 简化起见, 让系统全局信任 mitmproxy 的证书
+
+        *  cd ~/.mitmproxy
+        *  openssl x509 -in mitmproxy-ca-cert.pem -inform PEM -out mitmproxy-ca-cert.crt
+        *  sudo mkdir /usr/share/ca-certificates/extra
+        *  sudo cp mitmproxy-ca-cert.crt /usr/share/ca-certificates/extra/mitmproxy.crt
+        *  sudo dpkg-reconfigure ca-certificates
+        
+        > 可参考在启用 代理服务器的情况下, 访问 http://mitm.it/ 
+
+    + 前面提到的修改系统 ca , 不适用于自签证书,  client 改为使用 前面生成 的 mitmproxy-ca-cert.crt , 可以实现通信.
+
+        * HTTP/2 connections with prior knowledge 的问题仍然存在
 
 - [ ] gRPC 需要的扩展
     

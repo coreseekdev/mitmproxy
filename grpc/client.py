@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 import sys
-
+from pathlib import Path
 
 import grpc
 import data_pb2
@@ -15,7 +15,8 @@ _HOST = host
 _PORT = '8888'
 
 def run():
-    with open('server.crt', 'rb') as f:
+    # with open('server.crt', 'rb') as f:
+    with open( str(Path.home()) + '/.mitmproxy/mitmproxy-ca-cert.crt', 'rb') as f:
         trusted_certs = f.read()
 
     credentials = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
