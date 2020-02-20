@@ -103,6 +103,9 @@ class RootContext:
             alpn = top_layer.client_conn.get_alpn_proto_negotiated()
             if alpn == b'h2':
                 return protocol.Http2Layer(top_layer, http.HTTPMode.transparent)
+            # hard code alpn for grpc support
+            if alpn == b'grpc-exp':
+                return protocol.Http2Layer(top_layer, http.HTTPMode.transparent)
             if alpn == b'http/1.1':
                 return protocol.Http1Layer(top_layer, http.HTTPMode.transparent)
 

@@ -189,3 +189,9 @@ TODO
 - [ ] gRPC 需要的扩展
     
     Ref: https://github.com/mitmproxy/mitmproxy/issues/3052
+
+    - 核心代码在 proxy/protocol/http2.py ,
+
+        + Http2SingleStreamLayer 本质上是一个 thread
+        + H2Connection 的 streams 是分别处理状态的(因此, 在发送 END_FRAME 之后, 需要重新弄一个 stream)
+        + 处理的核心类为 Http2Layer 

@@ -28,7 +28,10 @@ class DisableH2C:
             f.request.path == '*' and
             f.request.http_version == 'HTTP/2.0'
         )
-        if is_connection_preface:
+
+        # add a work around for gRPC
+        alpn = f.client_conn.get_alpn_proto_negotiated()
+        if is_connection_preface and alpn != b'grpc-exp':
             f.kill()
             mitmproxy.ctx.log.warn("Initiating HTTP/2 connections with prior knowledge are currently not supported.")
 
