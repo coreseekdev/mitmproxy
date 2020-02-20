@@ -18,6 +18,12 @@ mitmproxy/contrib/kaitaistruct/*.ksy
 .pytest_cache
 __pycache__
 
+
+# Cert
+grpc/server.key
+grpc/server.crt
+
+
 # UI
 
 node_modules
