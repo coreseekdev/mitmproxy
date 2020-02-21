@@ -186,7 +186,7 @@ TODO
 
         * HTTP/2 connections with prior knowledge 的问题仍然存在
 
-- [ ] gRPC 需要的扩展
+- [x] gRPC 需要的扩展
     
     Ref: https://github.com/mitmproxy/mitmproxy/issues/3052
 
@@ -195,3 +195,16 @@ TODO
         + Http2SingleStreamLayer 本质上是一个 thread
         + H2Connection 的 streams 是分别处理状态的(因此, 在发送 END_FRAME 之后, 需要重新弄一个 stream)
         + 处理的核心类为 Http2Layer 
+
+- [ ] 支持基于　Avro　IDL　的　RPC 机制
+
+    这个功能主要用于反向工程　Keybase 的　客户端 ，虽然从代码中可以重构，毕竟麻烦．
+    
+    midmproxy 需要使用自己的签名进行劫持，因此需要　keybase 信任　mitmproxy 的　ca, 实例命令如下
+
+    >  keybase --disable-cert-pinning --debug --force-linux-keyring --extra-net-logging service
+
+    关键点在　｀--force-linux-keyring｀　强制使用　Linux 系统的证书链条
+
+    - 将代理服务器设置到　sock5 代理模式
+    - 设置　keybase 的客户端为通过代理，　并且允许　mid 劫持
