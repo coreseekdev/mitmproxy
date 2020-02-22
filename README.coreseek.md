@@ -199,12 +199,55 @@ TODO
 - [ ] 支持基于　Avro　IDL　的　RPC 机制
 
     这个功能主要用于反向工程　Keybase 的　客户端 ，虽然从代码中可以重构，毕竟麻烦．
+
+    FIX: 实际　keybase 的　rpc　请求通过　framed-msgpack-rpc 机制，　不是　Avro IDL 的　RPC
     
     midmproxy 需要使用自己的签名进行劫持，因此需要　keybase 信任　mitmproxy 的　ca, 实例命令如下
 
     >  keybase --disable-cert-pinning --debug --force-linux-keyring --extra-net-logging service
 
-    关键点在　｀--force-linux-keyring｀　强制使用　Linux 系统的证书链条
+    [del]关键点在　｀--force-linux-keyring｀　强制使用　Linux 系统的证书链条[/del]
+
+    > 前面的方法短暂有效后，突然不工作．通过修改代码，忽略证书验证回避问题．
+
 
     - 将代理服务器设置到　sock5 代理模式
     - 设置　keybase 的客户端为通过代理，　并且允许　mid 劫持
+    - 检测发现，似乎部分　rpc　调用与　HTTP 协议复用链接（端口）
+
+    在项目　go-framed-msgpack-rpc 中，根据请求头的不同（要求），　服务器端返回值可以不压缩，也可以进行压缩．
+
+    - 具体可参考其　rpc/client.go
+    - 注意　Framed 的长度本身为 MessagePack　编码的，很大概率　> 1 byte.
+    - 根据　rpc/dispatch.go:76 ，　请求 request 的编码顺序是
+
+        + 无压缩：　　#　[0, 3, b'keybase.1.block.getUserQuotaInfo', [{}], {b'ECQU': b'IVDGrFlDbnDRM80x0dgDRQ'}]
+            * 请求类型，　eg. MethodCall = 0 , MethodCallCompressed = 4.
+                - 当超过了调用时间限制时，可能会发送　MethodCancel=3
+            * seqid　请求的顺序号
+            * 方法名的字符串
+            * 参数
+        + 压缩　
+            * 请求类型　MethodCallCompressed
+            * seqid　请求的顺序号
+            + 使用的压缩方法编码，　！！　注意此处比未压缩多一个
+            * 方法名的字符串
+            * 压缩过的参数
+        
+        + 后续公共的，　rpcTags
+        + 请求的长度使用额外的编码器　packetizer.go:41
+            lengthDecoder:       codec.NewDecoder(wrappedReader, newCodecMsgpackHandle()),
+
+    - 根据　rpc/message.go rpc/request.go, 反馈　response 的编码顺序为
+
+        + 有压缩
+            * 类型　MethodResponse　= 1
+            * SeqNo
+            * errArg
+            * res　压缩过
+
+        + 无压缩　同上，　区别在于　res 未压缩
+
+    - gzip 压缩，　沿用　"compress/gzip", 就是简单的解压
+
+    - Msgpackzip, 调用　"github.com/keybase/msgpackzip"　的　Compress　和　Inflate
