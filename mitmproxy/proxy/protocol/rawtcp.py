@@ -1,6 +1,8 @@
 import socket
 
 from OpenSSL import SSL
+import msgpack
+import io
 
 import mitmproxy.net.tcp
 from mitmproxy import tcp
@@ -15,6 +17,11 @@ class RawTCPLayer(base.Layer):
     def __init__(self, ctx, ignore=False):
         self.ignore = ignore
         super().__init__(ctx)
+    
+    def _decode_msgpack(self, buf):
+        unpacker = msgpack.Unpacker(io.BytesIO(buf), raw=True)
+        for unpacked in unpacker:
+            print(unpacked)
 
     def __call__(self):
         self.connect()
@@ -54,6 +61,8 @@ class RawTCPLayer(base.Layer):
                     if not self.ignore:
                         f.messages.append(tcp_message)
                         self.channel.ask("tcp_message", f)
+                    # print('IsReq', dst == server, 'recv',tcp_message.content)
+                    self._decode_msgpack(tcp_message.content)
                     dst.sendall(tcp_message.content)
 
         except (socket.error, exceptions.TcpException, SSL.Error) as e:
