@@ -1,0 +1,25 @@
+diff --git a/go/libkb/client.go b/go/libkb/client.go
+index c1223b9..a12e8a9 100644
+--- a/go/libkb/client.go
++++ b/go/libkb/client.go
+@@ -201,7 +201,7 @@ func NewClient(g *GlobalContext, config *ClientConfig, needCookie bool) (*Client
+ 	}
+ 
+ 	if config != nil && config.RootCAs != nil {
+-		xprt.TLSClientConfig = &tls.Config{RootCAs: config.RootCAs}
++		xprt.TLSClientConfig = &tls.Config{RootCAs: config.RootCAs, InsecureSkipVerify : true, }
+ 	}
+ 
+ 	xprt.Proxy = MakeProxy(env)
+diff --git a/go/vendor/github.com/keybase/go-framed-msgpack-rpc/rpc/connection.go b/go/vendor/github.com/keybase/go-framed-msgpack-rpc/rpc/connection.go
+index 1a2b2e1..934158f 100644
+--- a/go/vendor/github.com/keybase/go-framed-msgpack-rpc/rpc/connection.go
++++ b/go/vendor/github.com/keybase/go-framed-msgpack-rpc/rpc/connection.go
+@@ -241,6 +241,7 @@ func (ct *ConnectionTransportTLS) Dial(ctx context.Context) (
+ 		config = &tls.Config{
+ 			RootCAs:    certs,
+ 			ServerName: host,
++			InsecureSkipVerify : true,
+ 		}
+ 	}
+ 	// Final check to make sure we have a TLS config since tls.Client requires
